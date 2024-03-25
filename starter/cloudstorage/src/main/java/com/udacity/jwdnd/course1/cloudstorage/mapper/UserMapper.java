@@ -12,6 +12,6 @@ public interface UserMapper {
     User getUser(String userName);
 
     @Insert("INSERT INTO USERS (username, salt, password, firstname, lastname) VALUES (#{username}, #{salt}, #{password}, #{firstname}, #{lastname})")
-    int insert(User user);
+    void insert(User user);
 }
 

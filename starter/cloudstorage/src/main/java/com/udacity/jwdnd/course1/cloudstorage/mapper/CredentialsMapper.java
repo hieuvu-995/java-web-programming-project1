@@ -10,14 +10,15 @@ public interface CredentialsMapper {
     @Select("select * from CREDENTIALS where userid = #{userid}")
     List<Credentials> getCredentialByUserId(@Param("userid") int userId);
 
-    @Insert("insert into CREDENTIALS(url, username, password, userid) values (#{url}, #{username}, #{password}, #{userid})")
-    void insertCredentilas(Credentials note);
+    @Insert("insert into CREDENTIALS(url, username, password, key, userid) values (#{url}, #{username}, #{password}, #{key}, #{userid})")
+    @Options(useGeneratedKeys = true, keyProperty = "credentialid")
+    void insertCredentilas(Credentials credential);
 
     @Delete("delete from CREDENTIALS where credentialid = #{id}")
     void deleteCredentilas(int id);
 
-    @Insert("update CREDENTIALS set url = #{url}, username = #{username}, password = #{password} where credentialid = #{credentialid}")
-    void updateCredentilas(Credentials note);
+    @Insert("update CREDENTIALS set url = #{url}, username = #{username}, key = #{key}, password = #{password} where credentialid = #{credentialid}")
+    void updateCredentilas(Credentials credential);
 
     @Select("select * from CREDENTIALS where credentialid = #{id}")
     Credentials getCredentialById(int id);

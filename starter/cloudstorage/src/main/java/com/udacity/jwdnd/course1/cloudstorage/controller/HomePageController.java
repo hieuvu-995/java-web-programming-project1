@@ -9,6 +9,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @Controller
 public class HomePageController {
@@ -34,6 +35,11 @@ public class HomePageController {
         this.encryptionService = encryptionService;
     }
 
+    @GetMapping("")
+    public String homepage() {
+        return "redirect:/login";
+    }
+    
     @GetMapping("/home")
     public String home(Authentication auth, Model model) {
         String loggedInUserName = (String) auth.getPrincipal();
@@ -46,17 +52,17 @@ public class HomePageController {
         return "home";
     }
 
-    @GetMapping("login")
+    @GetMapping("/login")
     public String showLogin() {
         return "login";
     }
 
-    @GetMapping("signup")
+    @GetMapping("/signup")
     public String showSignup() {
         return "signup";
     }
 
-    @PostMapping("signup")
+    @PostMapping("/signup")
     public String signup(@ModelAttribute User user) {
         if (!userService.userNameExisted(user.getUsername())) {
             throw new RuntimeException("Username existed");

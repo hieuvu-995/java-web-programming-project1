@@ -2,10 +2,15 @@ package com.udacity.jwdnd.course1.cloudstorage.services;
 
 import com.udacity.jwdnd.course1.cloudstorage.mapper.FileMapper;
 import com.udacity.jwdnd.course1.cloudstorage.model.File;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 @Service
@@ -16,18 +21,12 @@ public class FileService {
         this.fileMapper = fileMapper;
     }
 
-    public void addFile(MultipartFile fileUpload, int userid) throws IOException {
-        File file = new File();
-        try {
-            file.setContenttype(fileUpload.getContentType());
-            file.setFiledata(fileUpload.getBytes());
-            file.setFilename(fileUpload.getOriginalFilename());
-            file.setFilesize(Long.toString(fileUpload.getSize()));
-            file.setUserid(userid);
-        } catch (IOException e) {
-            throw e;
-        }
-        fileMapper.insertFile(file);
+    public boolean fileExisted(int userId, String filename) {
+        return fileMapper.getByUserIdAndFileName(userId, filename) == null;
+    }
+    
+    public void addFile(File fileUpload){
+        fileMapper.insertFile(fileUpload);
     }
 
     public boolean findByFileName(String filename) {
@@ -50,5 +49,21 @@ public class FileService {
 
     public List<File> getFileByUserId(int userId) {
         return fileMapper.getFileByUser(userId);
+    }
+    
+    public Resource downloadFile(int fileId) {
+        try {
+            File file = getFileById(fileId);
+            Path filePath = Paths.get("uploads");
+            var resource = new UrlResource(filePath.resolve(file.getFilename()).toUri());
+
+            if (resource.exists() || resource.isReadable()) {
+                return resource;
+            } else {
+                throw new RuntimeException("Could not read the file!");
+            }
+        } catch (MalformedURLException e) {
+            throw new RuntimeException("Error: " + e.getMessage());
+        }
     }
 }
