@@ -5,11 +5,21 @@ import lombok.Builder;
 @Builder
 public class File {
     private int fileId;
+    
     private String filename;
     private String contenttype;
     private String filesize;
     private int userid;
     private byte[] filedata;
+
+    public File(int fileId, String filename, String contenttype, String filesize, int userid, byte[] filedata) {
+        this.fileId = fileId;
+        this.filename = filename;
+        this.contenttype = contenttype;
+        this.filesize = filesize;
+        this.userid = userid;
+        this.filedata = filedata;
+    }
 
     public int getFileId() {
         return fileId;

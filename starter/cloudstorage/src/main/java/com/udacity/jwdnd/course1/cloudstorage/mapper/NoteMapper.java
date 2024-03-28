@@ -19,7 +19,4 @@ public interface NoteMapper {
 
     @Insert("update NOTES set notetitle = #{notetitle}, notedescription = #{notedescription} where noteid = #{noteid}")
     void updateNote(Note note);
-
-    @Select("select * from NOTES where noteid = #{id}")
-    Note findById(int id);
 }

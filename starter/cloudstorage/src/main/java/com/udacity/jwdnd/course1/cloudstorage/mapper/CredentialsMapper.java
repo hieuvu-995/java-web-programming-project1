@@ -20,7 +20,5 @@ public interface CredentialsMapper {
     @Insert("update CREDENTIALS set url = #{url}, username = #{username}, key = #{key}, password = #{password} where credentialid = #{credentialid}")
     void updateCredentilas(Credentials credential);
 
-    @Select("select * from CREDENTIALS where credentialid = #{id}")
-    Credentials getCredentialById(int id);
 }
 

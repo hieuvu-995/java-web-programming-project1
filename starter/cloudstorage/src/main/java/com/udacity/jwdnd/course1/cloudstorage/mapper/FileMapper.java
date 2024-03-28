@@ -19,7 +19,7 @@ public interface FileMapper {
     @Select("select * from FILES where filename = #{filename}")
     File getByFileName(String filename);
 
-    @Insert("insert into FILES(filename, contenttype, filesize, userid) values (#{filename}, #{contenttype}, #{filesize}, #{userid})")
+    @Insert("insert into FILES(filename, contenttype, filesize, userid, filedata) values (#{filename}, #{contenttype}, #{filesize}, #{userid}, #{filedata})")
     @Options(useGeneratedKeys = true, keyProperty = "fileId")
     void insertFile(File file);
 

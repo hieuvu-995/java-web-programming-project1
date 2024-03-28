@@ -5,8 +5,8 @@ import com.udacity.jwdnd.course1.cloudstorage.model.User;
 import com.udacity.jwdnd.course1.cloudstorage.services.FileService;
 import com.udacity.jwdnd.course1.cloudstorage.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -24,27 +24,28 @@ public class FileController {
     private FileService fileService;
     @Autowired
     private UserService userService;
-    
+    private static long fileSizeMax = 5000000;
     @PostMapping("/upload")
     public String uploadFile(@RequestParam MultipartFile fileUpload, Authentication auth, Model model) throws IOException {
         User user = userService.getUserByUsername(auth.getName());
         int userId = user.getUserId();
-        String filename = fileUpload.getName();
+        String filename = fileUpload.getOriginalFilename();
 
         if (!fileService.fileExisted(userId, filename)) {
-            model.addAttribute("error", "file existed");
-            model.addAttribute("success", false);
+            model.addAttribute("error", "File is existed");
             return "result";
-        } else {
-            fileService.addFile(
-                    File.builder()
-                            .userid(userId)
-                            .filename(filename)
-                            .contenttype(fileUpload.getContentType())
-                            .filedata(fileUpload.getBytes())
-                            .filesize(String.valueOf(fileUpload.getSize())).build());
-            model.addAttribute("success", true);
         }
+        if(fileUpload.getSize() > fileSizeMax) {
+            model.addAttribute("error", "File size exceeds allowable value");
+            return "result";
+        }
+        fileService.addFile(
+                File.builder()
+                        .userid(userId)
+                        .filename(filename)
+                        .contenttype(fileUpload.getContentType())
+                        .filedata(fileUpload.getBytes())
+                        .filesize(String.valueOf(fileUpload.getSize())).build());
         return "redirect:/result?success";
     }
 
@@ -56,11 +57,15 @@ public class FileController {
 
     @GetMapping("/view/{id}")
     @ResponseBody
-    public ResponseEntity<Resource> viewFile(@PathVariable int id) {
-        Resource resource = fileService.downloadFile(id);
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + resource.getFilename())
-                .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .body(resource);
+    public ResponseEntity<byte[]> viewFile(@PathVariable int id) {
+        File fileUploaded = fileService.getFileById(id);
+        if (fileUploaded == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        } else {
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(fileUploaded.getContenttype()))
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileUploaded.getFilename() + "\"")
+                    .body(fileUploaded.getFiledata());
+        }
     }
 }
