@@ -69,7 +69,7 @@ public class HomePageController {
         }
         try {
             userService.createUser(user);
-            return "redirect:/login?signupSuccess";
+            return "redirect:/signup?success";
         } catch (Exception e) {
             return "redirect:/signup?fail";
         }
