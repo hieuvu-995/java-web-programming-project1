@@ -20,7 +20,7 @@
             You successfully signed up! Please continue to the <a th:href="@{/login}">login</a> page.
         </div>
         <div th:if="${param.fail}" class="alert alert-danger">
-            <span>Signup failed</span>
+            <span>Signup failed! Please make sure username is not duplicated or retry</span>
         </div>
         <div class="form-row">
             <div class="form-group col-md-6">
