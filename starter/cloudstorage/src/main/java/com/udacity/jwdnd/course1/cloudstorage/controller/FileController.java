@@ -4,6 +4,7 @@ import com.udacity.jwdnd.course1.cloudstorage.model.File;
 import com.udacity.jwdnd.course1.cloudstorage.model.User;
 import com.udacity.jwdnd.course1.cloudstorage.services.FileService;
 import com.udacity.jwdnd.course1.cloudstorage.services.UserService;
+import org.apache.tomcat.util.http.fileupload.impl.SizeLimitExceededException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -13,6 +14,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -24,28 +26,31 @@ public class FileController {
     private FileService fileService;
     @Autowired
     private UserService userService;
-    private static long fileSizeMax = 5000000;
+    private static final long fileSizeMax = 5000000;
     @PostMapping("/upload")
-    public String uploadFile(@RequestParam MultipartFile fileUpload, Authentication auth, Model model) throws IOException {
+    public String uploadFile(@RequestParam MultipartFile fileUpload, Authentication auth, Model model) {
         User user = userService.getUserByUsername(auth.getName());
         int userId = user.getUserId();
         String filename = fileUpload.getOriginalFilename();
 
         if (!fileService.fileExisted(userId, filename)) {
-            model.addAttribute("error", "File is existed");
-            return "result";
+            model.addAttribute("error", "File already exists");
+            return "redirect:/result?error";
         }
-        if(fileUpload.getSize() > fileSizeMax) {
-            model.addAttribute("error", "File size exceeds allowable value");
-            return "result";
+
+        try {
+            fileService.addFile(
+                    File.builder()
+                            .userid(userId)
+                            .filename(filename)
+                            .contenttype(fileUpload.getContentType())
+                            .filedata(fileUpload.getBytes())
+                            .filesize(String.valueOf(fileUpload.getSize())).build());
+        } catch (Exception e) {
+            model.addAttribute("error", "Error occurred while processing the file");
+            return "redirect:/result?error";
         }
-        fileService.addFile(
-                File.builder()
-                        .userid(userId)
-                        .filename(filename)
-                        .contenttype(fileUpload.getContentType())
-                        .filedata(fileUpload.getBytes())
-                        .filesize(String.valueOf(fileUpload.getSize())).build());
+
         return "redirect:/result?success";
     }
 

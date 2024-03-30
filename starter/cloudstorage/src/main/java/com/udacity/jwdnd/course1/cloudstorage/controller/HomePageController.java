@@ -65,7 +65,7 @@ public class HomePageController {
     @PostMapping("/signup")
     public String signup(@ModelAttribute User user) {
         if (!userService.userNameExisted(user.getUsername())) {
-            throw new RuntimeException("Username existed");
+            return "redirect:/signup?fail";
         }
         try {
             userService.createUser(user);
